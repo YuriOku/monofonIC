@@ -113,6 +113,41 @@ public:
         } 
       }  
     }
+
+    // output wnoise field (YO)
+    size_t N = 1<<levelmin_;
+    char fname[128];
+    std::vector<real_t> data;
+    sprintf(fname, "wnoise_%04d.bin", levelmin_);
+    music::ilog << "Storing white noise field in file " << fname << std::endl;
+
+		std::ofstream ofs(fname,std::ios::binary|std::ios::trunc);
+
+		ofs.write( reinterpret_cast<char*> (&N), sizeof(unsigned) );
+    ofs.write( reinterpret_cast<char*> (&N), sizeof(unsigned) );
+    ofs.write( reinterpret_cast<char*> (&N), sizeof(unsigned) );
+
+		data.assign( N*N, 0.0 );
+
+    for( auto i = i0; i<Ni; ++i )
+    {
+      // size_t ip  = i-i0; // index in g
+      #pragma omp parallel for
+      for( auto j = j0; j<Nj; ++j )
+      {
+        auto   jp = j-j0; // index in g
+        for( auto k = k0; k<Nk; ++k )
+        {
+          auto   kp = k-k0; // index in g
+					data[jp*N+kp] = (*randc_[levelmin_])(i,j,k);
+        } 
+      }  
+			ofs.write(reinterpret_cast<char*> (&data[0]), N*N*sizeof(real_t) );
+    }
+
+		ofs.close();
+    // added by YO.
+
   } 
 
   void initialize_for_grid_structure()
@@ -294,6 +329,40 @@ void RNG_music::compute_random_numbers(void)
     constraints.apply( levelmin_, x0, lx, randc_[levelmin_] );
   }
 #endif
+
+    // // output wnoise field (YO)
+    // if (CONFIG::MPI_task_rank == 0){
+    //   int N = 1<<levelmin_;
+    //   char fname[128];
+    //   std::vector<real_t> data;
+    //   sprintf(fname, "wnoise_%04d.bin", levelmin_);
+    //   music::ilog << "Storing white noise field in file " << fname << std::endl;
+
+		//   std::ofstream ofs(fname,std::ios::binary|std::ios::trunc);
+
+		//   ofs.write( reinterpret_cast<char*> (&N), sizeof(unsigned) );
+    //   ofs.write( reinterpret_cast<char*> (&N), sizeof(unsigned) );
+    //   ofs.write( reinterpret_cast<char*> (&N), sizeof(unsigned) );
+
+		//   data.assign( N*N, 0.0 );
+
+    //   for( auto i = 0; i<N; ++i )
+    //   {
+    //     #pragma omp parallel for
+    //     for( auto j = 0; j<N; ++j )
+    //     {
+    //       for( auto k = 0; k<N; ++k )
+    //       {
+		//   			data[j*N+k] = (*randc_[levelmin_])(i,j,k);
+    //       } 
+    //     }  
+		//   	ofs.write(reinterpret_cast<char*> (&data[0]), N*N*sizeof(real_t) );
+    //   }
+
+		//   ofs.close();
+    // }
+    // // added by YO.
+
 
   // store_rnd(levelmin_, randc_[levelmin_]);
 

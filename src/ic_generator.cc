@@ -317,6 +317,58 @@ int run( config_file& the_config )
         return ((bDoInversion)? real_t{-1.0} : real_t{1.0}) * wn / volfac;
     });
 
+    //--------------------------------------------------------------------
+    // YO: output wnoise after fixing
+    //--------------------------------------------------------------------
+    size_t i0 = wnoise.local_0_start_, j0{0}, k0{0};
+    size_t Ni = wnoise.rsize(0), Nj = wnoise.rsize(1), Nk = wnoise.rsize(2);
+
+    // make sure we're in real space
+    wnoise.FourierTransformBackward();
+    
+    // output wnoise field (YO)
+    size_t N = 1<<10;
+    char fname[128];
+    std::vector<real_t> data;
+    sprintf(fname, "wnoise_fixed.bin");
+    music::ilog << "Storing white noise field in file " << fname << std::endl;
+
+    music::ilog << "Ni = " << Ni << std::endl;
+    music::ilog << "Nj = " << Nj << std::endl;
+    music::ilog << "Nk = " << Nk << std::endl;
+    music::ilog << "N  = " << N << std::endl;
+
+
+	std::ofstream ofs(fname,std::ios::binary|std::ios::trunc);
+
+	ofs.write( reinterpret_cast<char*> (&Ni), sizeof(unsigned) );
+    ofs.write( reinterpret_cast<char*> (&Nj), sizeof(unsigned) );
+    ofs.write( reinterpret_cast<char*> (&Nk), sizeof(unsigned) );
+
+	data.assign( Nj*Nk, 0.0 );
+
+
+    // copy over
+    for( auto i = i0; i<Ni; ++i )
+    {
+      size_t ip  = i-i0; // index in g
+      #pragma omp parallel for
+      for( auto j = j0; j<Nj; ++j )
+      {
+        auto   jp = j-j0; // index in g
+        for( auto k = k0; k<Nk; ++k )
+        {
+          auto   kp = k-k0; // index in g
+          data[jp*Nk+kp] = wnoise.relem(ip,jp,kp);
+        } 
+      }  
+	    ofs.write(reinterpret_cast<char*> (&data[0]), Nj*Nk*sizeof(real_t) );
+    }
+	ofs.close();
+    //--------------------------------------------------------------------
+    // added by YO.
+    //--------------------------------------------------------------------
+
 
     //--------------------------------------------------------------------
     // Compute the LPT terms....
