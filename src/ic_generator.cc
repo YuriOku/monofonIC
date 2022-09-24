@@ -320,6 +320,11 @@ int run( config_file& the_config )
     //--------------------------------------------------------------------
     // YO: output wnoise after fixing
     //--------------------------------------------------------------------
+#ifdef USE_MPI
+    int Ntask;
+    MPI_Comm_size(MPI_COMM_WORLD, &Ntask);
+    if (Ntask == 0){
+#endif
     size_t i0 = wnoise.local_0_start_, j0{0}, k0{0};
     size_t Ni = wnoise.rsize(0), Nj = wnoise.rsize(1), Nk = wnoise.rsize(2);
 
@@ -365,6 +370,9 @@ int run( config_file& the_config )
 	    ofs.write(reinterpret_cast<char*> (&data[0]), Nj*Nk*sizeof(real_t) );
     }
 	ofs.close();
+#ifdef USE_MPI
+    }
+#endif
     //--------------------------------------------------------------------
     // added by YO.
     //--------------------------------------------------------------------

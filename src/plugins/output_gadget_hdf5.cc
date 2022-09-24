@@ -112,7 +112,11 @@ public:
     int thisrank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &thisrank);
     if (num_files_ > 1)
-      this_fname_ += "." + std::to_string(thisrank);
+      this_fname_ += "." + std::to_string(thisrank) + ".hdf5";
+    else
+      this_fname_ += ".hdf5";
+#else
+    this_fname_ += ".hdf5";
 #endif
 
     unlink(this_fname_.c_str());
