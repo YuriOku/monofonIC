@@ -620,6 +620,7 @@ double music_wnoise_generator<T>::fill_cube(int i, int j, int k)
       for (int kk = 0; kk < (int)cubesize_; ++kk)
       {
         (*rnums_[cubeidx])(ii, jj, kk) = gsl_ran_ugaussian_ratio_method(RNG);
+        // music::ilog << "rand: " << (*rnums_[cubeidx])(ii, jj, kk) << std::endl;
         mean += (*rnums_[cubeidx])(ii, jj, kk);
       }
 
