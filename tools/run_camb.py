@@ -5,11 +5,12 @@ from camb import model, initialpower
 
 # Set parameters
 class param:
-  z = 2
+  z = 49
   kmax = 1e3
-  kmin = 1e-5
-  npoints = 2000
-  cosmology = "Planck15"
+  kmin = 1e-4
+  npoints = 1000
+  cosmology = "Planck18"
+  nonlinear=True
 
 # Set up cosmologal parameters
 class Cosmo:
@@ -47,26 +48,27 @@ cosmo = Cosmo(param.cosmology)
 pars = camb.CAMBparams()
 pars.set_cosmology(H0=cosmo.H0, ombh2=cosmo.ombh2, omch2=cosmo.omch2)
 pars.InitPower.set_params(As=cosmo.As, ns=cosmo.ns)
-pars.set_matter_power(redshifts=[param.z], nonlinear=True, kmax=param.kmax)
+pars.set_matter_power(redshifts=[param.z], nonlinear=param.nonlinear, kmax=param.kmax)
 
 # Linear spectra
 results = camb.get_results(pars)
 kh, z, pk = results.get_matter_power_spectrum(minkh=param.kmin, maxkh=param.kmax, npoints = param.npoints)
 
-# # Plot 
-import matplotlib.pyplot as plt
-for i, (redshift, line) in enumerate(zip(z,['-','--'])):
-    plt.loglog(kh, pk[i,:], color='k', ls = line)
-plt.xlabel('k/h Mpc')
-plt.ylabel('P(k)')
-plt.xlim(1e-4, 1e2)
-plt.ylim(1e-3, 1e4)
-plt.show()
-plt.close()
+# # # Plot 
+# import matplotlib.pyplot as plt
+# for i, (redshift, line) in enumerate(zip(z,['-','--'])):
+#     plt.loglog(kh, pk[i,:], color='k', ls = line)
+# plt.xlabel('k/h Mpc')
+# plt.ylabel('P(k)')
+# plt.show()
+# plt.close()
 
 # save to file
 powerspec = np.vstack((kh, pk))
 np.savetxt("powerspec_z{}_{}.txt".format(param.z, param.cosmology), powerspec.T)
+pkm = 8 * np.pi**3 * pk
+powerspec_music = np.vstack((kh, pkm, pkm, pkm, pkm, pkm, pkm, pkm, pkm, pkm, pkm, pkm, pkm))
+np.savetxt("powerspec_music_z{}_{}.txt".format(param.z, param.cosmology), powerspec_music.T)
 delta2 = 4 * np.pi * kh**3 * pk / (2 * np.pi)**3
 powerspec_ngenic = np.log10(np.vstack((kh, delta2)))
 np.savetxt("powerspec_ngenic_z{}_{}.txt".format(param.z, param.cosmology), powerspec_ngenic.T)
