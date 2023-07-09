@@ -43,7 +43,7 @@ class gadget_hdf5_output_plugin : public output_plugin
     double redshift;
     int flag_sfr;
     int flag_feedback;
-    unsigned int npartTotal[6];
+    uint64_t npartTotal[6];
     int flag_cooling;
     int num_files;
     double BoxSize;
@@ -52,7 +52,7 @@ class gadget_hdf5_output_plugin : public output_plugin
     double HubbleParam;
     int flag_stellarage;
     int flag_metals;
-    unsigned int npartTotalHighWord[6];
+    uint64_t npartTotalHighWord[6];
     int flag_entropy_instead_u;
     int flag_doubleprecision;
   };
@@ -135,7 +135,7 @@ public:
       HDFWriteGroupAttribute(this_fname_, "Header", "Redshift", from_value<double>(header_.redshift));
       HDFWriteGroupAttribute(this_fname_, "Header", "Flag_Sfr", from_value<int>(header_.flag_sfr));
       HDFWriteGroupAttribute(this_fname_, "Header", "Flag_Feedback", from_value<int>(header_.flag_feedback));
-      HDFWriteGroupAttribute(this_fname_, "Header", "NumPart_Total", from_6array<unsigned>(header_.npartTotal));
+      HDFWriteGroupAttribute(this_fname_, "Header", "NumPart_Total", from_6array<uint64_t>(header_.npartTotal));
       HDFWriteGroupAttribute(this_fname_, "Header", "Flag_Cooling", from_value<int>(header_.flag_cooling));
       HDFWriteGroupAttribute(this_fname_, "Header", "NumFilesPerSnapshot", from_value<int>(header_.num_files));
       HDFWriteGroupAttribute(this_fname_, "Header", "BoxSize", from_value<double>(header_.BoxSize));
@@ -144,7 +144,7 @@ public:
       HDFWriteGroupAttribute(this_fname_, "Header", "HubbleParam", from_value<double>(header_.HubbleParam));
       HDFWriteGroupAttribute(this_fname_, "Header", "Flag_StellarAge", from_value<int>(header_.flag_stellarage));
       HDFWriteGroupAttribute(this_fname_, "Header", "Flag_Metals", from_value<int>(header_.flag_metals));
-      HDFWriteGroupAttribute(this_fname_, "Header", "NumPart_Total_HighWord", from_6array<unsigned>(header_.npartTotalHighWord));
+      HDFWriteGroupAttribute(this_fname_, "Header", "NumPart_Total_HighWord", from_6array<uint64_t>(header_.npartTotalHighWord));
       HDFWriteGroupAttribute(this_fname_, "Header", "Flag_Entropy_ICs", from_value<int>(header_.flag_entropy_instead_u));
 
       music::ilog << "Wrote Gadget-HDF5 file(s) to " << this_fname_ << std::endl;
@@ -194,8 +194,8 @@ public:
     assert(sid != -1);
 
     header_.npart[sid] = (pc.get_local_num_particles());
-    header_.npartTotal[sid] = (uint32_t)(pc.get_global_num_particles());
-    header_.npartTotalHighWord[sid] = (uint32_t)((pc.get_global_num_particles()) >> 32);
+    header_.npartTotal[sid] = (uint64_t)(pc.get_global_num_particles());
+    header_.npartTotalHighWord[sid] = (uint64_t)((pc.get_global_num_particles()) >> 32);
 
     if( pc.bhas_individual_masses_ )
       header_.mass[sid] = 0.0;
